@@ -17,6 +17,13 @@ namespace TestProjectAPI.Controllers
         {
             this._usersDbContext = usersDbContext;
         }
+
+        [HttpGet]
+        [Route("hi")]
+        public string SayHi()
+        {
+            return "Hi";
+        }
         [HttpGet]
         [Route("GetUsers")]
         public async Task<IActionResult> GetUsers()
@@ -92,17 +99,25 @@ namespace TestProjectAPI.Controllers
 
         [HttpPost]
         [Route("Login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
+        public async Task<bool> Login([FromBody] LoginRequest loginRequest)
         {
             User user = null;
-            if (!String.IsNullOrEmpty(loginRequest.Email) && !String.IsNullOrEmpty(loginRequest.Password))
+            if (!String.IsNullOrEmpty(loginRequest.Email))
                 user = await _usersDbContext.Users.FirstOrDefaultAsync(u => u.Email == loginRequest.Email);
             else
-                return NotFound();
-            if (EncryptPassword.CheckPassword(loginRequest.Password, user.Password))
-                return Ok(true);
+                return false;
+            if (user != null)
+            {
+                if (EncryptPassword.CheckPassword(loginRequest.Password, user.Password))
+                    return true;
+                else
+                    return  false;
+            }
             else
-                return Ok(false);
+            {
+                return false;
+            }
+
 
         }
     }
